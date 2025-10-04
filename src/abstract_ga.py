@@ -9,6 +9,9 @@ class AbstractGA(ABC):
     """
     Abstract Genetic Algorithm implementation for maximization problems.
     Uses chromosome-based representation and evolutionary operators.
+    
+    IMPORTANTE: Este GA sempre MAXIMIZA o fitness.
+    Se usar QBF_Inverse (valores negativos), valores MENOS negativos são MELHORES.
     """
     
     # Class variable for random number generation
@@ -80,7 +83,7 @@ class AbstractGA(ABC):
             chromosome: Chromosome to evaluate
             
         Returns:
-            float: Fitness value
+            float: Fitness value (HIGHER is BETTER)
         """
         pass
     
@@ -118,7 +121,8 @@ class AbstractGA(ABC):
             
             best_chromosome = self.get_best_chromosome(population)
             
-            if self.fitness(best_chromosome) > self.best_sol.cost:
+            # fitness MAIOR é MELHOR (mesmo para valores negativos)
+            if self.fitness(best_chromosome) > self.fitness(self.best_chromosome):
                 self.best_chromosome = best_chromosome
                 self.best_sol = self.decode(best_chromosome)
                 if self.verbose:
@@ -141,6 +145,7 @@ class AbstractGA(ABC):
     def get_best_chromosome(self, population):
         """
         Find best chromosome in population.
+        CORRIGIDO: Agora procura por MAIOR fitness (maximização).
         
         Args:
             population: List of chromosomes
@@ -148,11 +153,12 @@ class AbstractGA(ABC):
         Returns:
             list: Best chromosome
         """
-        best_fitness = float('-inf')
+        best_fitness = float('-inf')  # Começa com -infinito
         best_chromosome = None
         
         for chromosome in population:
             fit = self.fitness(chromosome)
+            # MAIOR fitness é MELHOR
             if fit > best_fitness:
                 best_fitness = fit
                 best_chromosome = chromosome
@@ -162,6 +168,7 @@ class AbstractGA(ABC):
     def get_worse_chromosome(self, population):
         """
         Find worst chromosome in population.
+        CORRIGIDO: Agora procura por MENOR fitness (pior para maximização).
         
         Args:
             population: List of chromosomes
@@ -169,11 +176,12 @@ class AbstractGA(ABC):
         Returns:
             list: Worst chromosome
         """
-        worse_fitness = float('inf')
+        worse_fitness = float('inf')  # Começa com +infinito
         worse_chromosome = None
         
         for chromosome in population:
             fit = self.fitness(chromosome)
+            # MENOR fitness é PIOR
             if fit < worse_fitness:
                 worse_fitness = fit
                 worse_chromosome = chromosome
@@ -198,6 +206,7 @@ class AbstractGA(ABC):
             idx2 = random.randint(0, self.pop_size - 1)
             parent2 = population[idx2]
             
+            # Seleciona o de MAIOR fitness
             if self.fitness(parent1) > self.fitness(parent2):
                 parents.append(parent1[:])  # Copy
             else:
@@ -260,6 +269,7 @@ class AbstractGA(ABC):
     def select_population(self, offsprings):
         """
         Select population for next generation using elitism.
+        CORRIGIDO: Agora substitui o PIOR offspring pelo MELHOR histórico.
         
         Args:
             offsprings: Offspring population
@@ -269,6 +279,7 @@ class AbstractGA(ABC):
         """
         worse = self.get_worse_chromosome(offsprings)
         
+        # Se o pior offspring é PIOR que o melhor histórico, substitui
         if self.fitness(worse) < self.fitness(self.best_chromosome):
             offsprings.remove(worse)
             offsprings.append(self.best_chromosome[:])

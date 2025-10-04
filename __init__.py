@@ -1,5 +1,5 @@
 """
-Framework de Algoritmo Genético para problemas de otimização.
+Framework de Algoritmo Genético para problema de otimização QBF.
 
 Este pacote contém:
 - solution: Classe para representar soluções
@@ -13,7 +13,6 @@ Este pacote contém:
 __version__ = "1.0.0"
 __author__ = "Conversão de Java para Python"
 
-# Facilita imports diretos
 from .solution import Solution
 from .evaluator import Evaluator
 from .qbf import QBF
