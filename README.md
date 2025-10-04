@@ -1,159 +1,193 @@
-# Framework de Algoritmo Genético para QBF em Python
+# Algoritmo Genético para MAX-QBF com Set Cover
 
-Este é um framework de Algoritmo Genético (GA) para resolver o problema de Função Binária Quadrática (QBF), convertido do framework Java original mantendo a mesma estrutura e funcionalidades.
+Implementação de um Algoritmo Genético (GA) para resolver o problema de maximização de uma Função Binária Quadrática com restrições de cobertura de conjuntos (MAX-SC-QBF).
 
-## Estrutura do Projeto
+## 📋 Sobre o Projeto
+
+Este projeto foi desenvolvido como parte da **Atividade 4** da disciplina MO824/MC859 - Tópicos em Otimização Combinatória (2º semestre de 2025) na Unicamp.
+
+### Problema MAX-SC-QBF
+
+O MAX-SC-QBF combina dois problemas clássicos:
+
+1. **Maximização de QBF**: Maximizar `f(x) = x' · A · x` onde `x` é um vetor binário e `A` é uma matriz de coeficientes
+2. **Set Cover**: Garantir que todos os elementos do universo `N = {1, ..., n}` sejam cobertos por pelo menos um conjunto selecionado
+
+**Formulação**:
+- Variáveis de decisão: `x₁, x₂, ..., xₙ` (binárias)
+- Objetivo: Maximizar `f(x) = Σᵢ Σⱼ aᵢⱼ · xᵢ · xⱼ`
+- Restrição: Para todo `k ∈ N`, existe ao menos um `Sᵢ` tal que `k ∈ Sᵢ` e `xᵢ = 1`
+
+## 🚀 Características
+
+### Algoritmo Genético Base (PADRÃO)
+- **Codificação**: Cromossomos binários (cada bit representa uma variável)
+- **População inicial**: Geração aleatória com reparo para factibilidade
+- **Seleção**: Torneio binário
+- **Crossover**: 2-pontos
+- **Mutação**: Bit-flip com reparo automático
+- **Elitismo**: Melhor solução sempre preservada
+
+### Estratégias Evolutivas Alternativas
+
+1. **Latin Hypercube Sampling (LHC)** - EVOL1
+   - Inicialização da população usando amostragem LHC
+   - Garante melhor cobertura do espaço de soluções
+   - Cada estrato é amostrado exatamente uma vez
+
+2. **Adaptive Mutation** - EVOL2
+   - Taxa de mutação adaptativa que decai ao longo das gerações
+   - Início: alta exploração (taxa = 0.1)
+   - Fim: refinamento (taxa = 0.001)
+   - Decaimento linear
+
+## 📁 Estrutura do Projeto
 
 ```
-projeto/
-│
+.
 ├── src/
-│   ├── solution.py          # Classe Solution para representar soluções
-│   ├── evaluator.py         # Interface abstrata Evaluator
-│   ├── qbf.py              # Implementação do problema QBF
-│   ├── qbf_inverse.py      # QBF inverso para minimização
-│   ├── abstract_ga.py      # Framework abstrato do GA
-│   └── ga_qbf.py           # GA específico para QBF
-│
+│   ├── __init__.py
+│   ├── solution.py           # Classe Solution
+│   ├── evaluator.py          # Interface abstrata Evaluator
+│   ├── qbf.py                # Implementação QBF
+│   ├── qbf_inverse.py        # QBF inverso (minimização)
+│   ├── qbf_sc.py             # QBF com Set Cover (maximização)
+│   ├── abstract_ga.py        # Framework abstrato do GA
+│   ├── ga_qbf.py             # GA para QBF simples
+│   └── ga_qbf_sc.py          # GA para QBF-SC (★ principal)
 ├── instances/
-│   └── qbf/
-│       ├── qbf020          # Instâncias QBF
-│       ├── qbf040
-│       ├── qbf060
-│       ├── qbf080
-│       └── qbf100
-│
-└── main_qbf.py             # Script principal de execução
+│   └── qbf_sc/
+│       ├── instance-01.txt   # n=25
+│       ├── instance-04.txt   # n=50
+│       ├── instance-07.txt   # n=100
+│       └── ...               # 15 instâncias no total
+├── main_ga_qbf_sc.py         # Script principal
+├── run_experiments.py        # Execução de experimentos
+└── README.md
 ```
 
+## 🛠️ Instalação
 
-## Uso
+### Requisitos
+- Python 3.8 ou superior
+- Nenhuma dependência externa (usa apenas biblioteca padrão)
 
-### Execução Básica
+### Setup
 
 ```bash
-python main_qbf.py instances/qbf/qbf020
+# Clone o repositório
+git clone https://github.com/seu-usuario/ga-qbf-setcover.git
+cd ga-qbf-setcover
+
+# Não é necessário instalar dependências
+# O projeto usa apenas bibliotecas padrão do Python
 ```
 
-### Execução com Parâmetros Customizados
+## 🎮 Uso
+
+### Execução Simples
 
 ```bash
-python main_qbf.py instances/qbf/qbf040 1000 100 0.01
+python main_ga_qbf_sc.py <arquivo_instancia> [geracoes] [tam_pop] [taxa_mutacao]
 ```
 
-Onde:
-- **1000**: número de gerações
-- **100**: tamanho da população
-- **0.01**: taxa de mutação
+**Exemplo**:
+```bash
+# Executar com parâmetros padrão
+python main_ga_qbf_sc.py instances/qbf_sc/instance-01.txt
 
-### Parâmetros Padrão
+# Executar com parâmetros customizados
+python main_ga_qbf_sc.py instances/qbf_sc/instance-01.txt 1000 100 0.01
+```
 
-Se não especificados, os valores padrão são:
-- Gerações: 1000
-- Tamanho da população: 100
-- Taxa de mutação: 0.01 (1/100)
+### Execução de Experimentos Completos
 
-## Componentes Principais
+```bash
+python run_experiments.py
+```
 
-### 1. Solution (solution.py)
-Classe que representa uma solução do problema:
-- Estende `list` para armazenar elementos da solução
-- Mantém atributo `cost` com o valor da solução
-- Métodos: `copy()`, `__str__()`
+Este script executa automaticamente todas as 75 configurações:
+- 15 instâncias × 5 configurações = 75 experimentos
+- Configurações: PADRÃO, PADRÃO+POP, PADRÃO+MUT, PADRÃO+EVOL1, PADRÃO+EVOL2
+- Resultados salvos em `results/`
 
-### 2. Evaluator (evaluator.py)
-Interface abstrata para avaliadores de problemas:
-- `get_domain_size()`: retorna tamanho do domínio
-- `evaluate()`: avalia solução completa
-- `evaluate_insertion_cost()`: avalia inserção de elemento
-- `evaluate_removal_cost()`: avalia remoção de elemento
-- `evaluate_exchange_cost()`: avalia troca de elementos
+## 📊 Configurações de Experimentos
 
-### 3. QBF (qbf.py)
-Implementação do problema QBF:
-- Lê instâncias de arquivo
-- Avalia f(x) = x'.A.x
-- Métodos eficientes para avaliação incremental
+| Config | População | Mutação | Estratégia | Descrição |
+|--------|-----------|---------|------------|-----------|
+| **PADRÃO** | 100 | 0.01 | Random | Configuração baseline |
+| **PADRÃO+POP** | 300 | 0.01 | Random | População maior |
+| **PADRÃO+MUT** | 100 | 0.05 | Random | Mutação maior |
+| **PADRÃO+EVOL1** | 100 | 0.01 | LHC | Latin Hypercube |
+| **PADRÃO+EVOL2** | 100 | adaptive | Random | Mutação adaptativa |
 
-### 4. AbstractGA (abstract_ga.py)
-Framework abstrato do Algoritmo Genético:
-- Implementa loop evolutivo principal
-- Seleção por torneio
-- Crossover de 2 pontos
-- Mutação com taxa configurável
-- Elitismo para preservar melhor solução
-
-### 5. GA_QBF (ga_qbf.py)
-Implementação específica do GA para QBF:
-- Cromossomos binários (0 ou 1)
-- Decodificação: genes com valor 1 são incluídos na solução
-- Mutação: inversão de bit (flip)
-- Fitness: valor da função QBF
-
-## Formato das Instâncias
-
-As instâncias QBF devem seguir o formato:
+## 📝 Formato das Instâncias
 
 ```
-n
-a11 a12 a13 ... a1n
-a22 a23 ... a2n
+<n>                           # Número de variáveis
+<s1> <s2> ... <sn>           # Tamanhos dos conjuntos (opcional)
+<elementos de S1>            # Elementos cobertos pelo conjunto 1
+<elementos de S2>            # Elementos cobertos pelo conjunto 2
 ...
-ann
-```
-
-Onde:
-- **n**: dimensão do problema (número de variáveis)
-- **aij**: matriz triangular superior de coeficientes
-
-Exemplo (qbf020):
-```
-20
-5 9 -3 -5 -4 -6 -4 10 2 8 -6 -2 4 4 -9 -9 -2 -4 5 -2
--1 -7 -9 3 0 3 -3 8 9 -9 1 2 -7 5 -3 -9 2 2 -2
+<elementos de Sn>            # Elementos cobertos pelo conjunto n
+<a11> <a12> ... <a1n>        # Matriz A (triangular superior)
+<a22> <a23> ... <a2n>
 ...
+<ann>
 ```
 
-## Exemplo de Saída
-
+**Exemplo** (n=5):
 ```
-============================================================
-Genetic Algorithm for QBF Problem
-============================================================
-Instance:      instances/qbf/qbf020
-Generations:   1000
-Pop Size:      100
-Mutation Rate: 0.01
-============================================================
-
-(Gen. 0) BestSol = Solution: cost=[145.0], size=[12], elements=[0, 2, 4, ...]
-(Gen. 15) BestSol = Solution: cost=[178.0], size=[10], elements=[1, 3, 5, ...]
-(Gen. 42) BestSol = Solution: cost=[203.0], size=[11], elements=[0, 2, 3, ...]
-...
-
-============================================================
-Results
-============================================================
-Best Solution: Solution: cost=[234.0], size=[9], elements=[0, 1, 4, 7, 8, 11, 13, 15, 18]
-Time: 45.23 seconds
-============================================================
+5
+2 3 2 2 2
+1 2
+2 3 4
+1 4
+3 5
+4 5
+3 1 -2 0 3
+-1 2 1 -1
+2 -2 4
+0 5
+3
 ```
 
-## Funcionalidades Implementadas
+## 🔍 Detalhes de Implementação
 
-### Operadores Genéticos
+### Manutenção de Factibilidade
 
-1. **Inicialização**: População aleatória com genes binários
-2. **Seleção**: Torneio binário entre dois indivíduos
-3. **Crossover**: 2-point crossover
-4. **Mutação**: Bit flip com probabilidade configurável
-5. **Substituição**: Elitismo - preserva melhor indivíduo
+Todas as operações genéticas mantêm a factibilidade das soluções:
 
-### Avaliação Eficiente
+1. **Inicialização**: Soluções reparadas após geração aleatória
+2. **Crossover**: Offspring reparados se necessário
+3. **Mutação**: Reparo aplicado quando bit desligado viola cobertura
 
-O framework implementa métodos eficientes para:
-- Avaliação completa: O(n²)
-- Avaliação de inserção: O(n)
-- Avaliação de remoção: O(n)
-- Avaliação de troca: O(n)
+### Função de Reparo
+
+A função `repair_chromosome()` usa abordagem greedy:
+- Identifica elementos não cobertos
+- Adiciona variáveis que cobrem o máximo de elementos faltantes
+- Continua até cobertura completa
+
+### Função Fitness
+
+```python
+fitness(chromosome) = {
+    f(x)                      se solução factível
+    f(x) - |uncovered| × 10000  se solução infactível
+}
+```
+
+A penalização alta garante que soluções infactíveis sejam evitadas.
+
+
+## 📚 Referências
+
+1. **Reeves, C. R.** (2010). *Genetic Algorithms*. In: Gendreau, M., Potvin, J.Y. (eds) Handbook of Metaheuristics. International Series in Operations Research & Management Science, vol 146. Springer. DOI: 10.1007/978-1-4419-1665-5_10
+
+2. **Kochenberger, G. et al.** (2014). *The unconstrained binary quadratic programming problem: a survey*. Journal of Combinatorial Optimization, 28:58-81. DOI: 10.1007/s10878-014-9734-0
+
+## 📄 Licença
+
+Este projeto foi desenvolvido para fins acadêmicos como parte da disciplina MO824/MC859.
 
