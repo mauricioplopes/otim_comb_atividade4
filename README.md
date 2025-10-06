@@ -116,7 +116,7 @@ Este script executa automaticamente todas as 75 configurações:
 | Config | População | Mutação | Estratégia | Descrição |
 |--------|-----------|---------|------------|-----------|
 | **PADRÃO** | 100 | 0.01 | Random | Configuração baseline |
-| **PADRÃO+POP** | 300 | 0.01 | Random | População maior |
+| **PADRÃO+POP** | 200 | 0.01 | Random | População maior |
 | **PADRÃO+MUT** | 100 | 0.05 | Random | Mutação maior |
 | **PADRÃO+EVOL1** | 100 | 0.01 | LHC | Latin Hypercube |
 | **PADRÃO+EVOL2** | 100 | adaptive | Random | Mutação adaptativa |
